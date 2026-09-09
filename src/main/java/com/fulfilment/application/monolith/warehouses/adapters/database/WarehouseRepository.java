@@ -50,6 +50,12 @@ public class WarehouseRepository implements WarehouseStore, PanacheRepository<Db
     DbWarehouse entity =
         find("businessUnitCode = ?1 and archivedAt is null", buCode).firstResult();
     if (entity == null) {
+      try {
+        long id = Long.parseLong(buCode);
+        entity = find("id = ?1 and archivedAt is null", id).firstResult();
+      } catch (NumberFormatException ignored) {}
+    }
+    if (entity == null) {
       return null;
     }
     return entity.toWarehouse();
