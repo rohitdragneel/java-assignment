@@ -28,8 +28,8 @@ import org.jboss.logging.Logger;
 @Consumes("application/json")
 public class StoreResource {
 
-  @Inject Event<StoreCreatedEvent> storeCreatedEvent;
-  @Inject Event<StoreUpdatedEvent> storeUpdatedEvent;
+  @Inject StoreService storeService;
+  @Inject LegacyStoreManagerGateway legacyStoreManagerGateway;
 
   private static final Logger LOGGER = Logger.getLogger(StoreResource.class.getName());
 
@@ -49,64 +49,36 @@ public class StoreResource {
   }
 
   @POST
-  @Transactional
   public Response create(Store store) {
-    if (store.id != null) {
-      throw new WebApplicationException("Id was invalidly set on request.", 422);
-    }
+    // 1. Transaction commits inside storeService.create(store)
+    Store created = storeService.create(store);
 
-    store.persist();
+    // 2. Guaranteed to execute AFTER the database has committed!
+    legacyStoreManagerGateway.createStoreOnLegacySystem(created);
 
-    storeCreatedEvent.fire(new StoreCreatedEvent(store));
-
-    return Response.ok(store).status(201).build();
+    return Response.ok(created).status(201).build();
   }
 
   @PUT
   @Path("{id}")
-  @Transactional
   public Store update(Long id, Store updatedStore) {
-    if (updatedStore.name == null) {
-      throw new WebApplicationException("Store Name was not set on request.", 422);
-    }
+    // 1. Transaction commits inside storeService.update()
+    Store entity = storeService.update(id, updatedStore);
 
-    Store entity = Store.findById(id);
-
-    if (entity == null) {
-      throw new WebApplicationException("Store with id of " + id + " does not exist.", 404);
-    }
-
-    entity.name = updatedStore.name;
-    entity.quantityProductsInStock = updatedStore.quantityProductsInStock;
-
-    storeUpdatedEvent.fire(new StoreUpdatedEvent(entity));
+    // 2. Guaranteed to execute AFTER the database has committed!
+    legacyStoreManagerGateway.updateStoreOnLegacySystem(entity);
 
     return entity;
   }
 
   @PATCH
   @Path("{id}")
-  @Transactional
   public Store patch(Long id, Store updatedStore) {
-    if (updatedStore.name == null) {
-      throw new WebApplicationException("Store Name was not set on request.", 422);
-    }
+    // 1. Transaction commits inside storeService.patch()
+    Store entity = storeService.patch(id, updatedStore);
 
-    Store entity = Store.findById(id);
-
-    if (entity == null) {
-      throw new WebApplicationException("Store with id of " + id + " does not exist.", 404);
-    }
-
-    if (entity.name != null) {
-      entity.name = updatedStore.name;
-    }
-
-    if (entity.quantityProductsInStock != 0) {
-      entity.quantityProductsInStock = updatedStore.quantityProductsInStock;
-    }
-
-    storeUpdatedEvent.fire(new StoreUpdatedEvent(entity));
+    // 2. Guaranteed to execute AFTER the database has committed!
+    legacyStoreManagerGateway.updateStoreOnLegacySystem(entity);
 
     return entity;
   }
