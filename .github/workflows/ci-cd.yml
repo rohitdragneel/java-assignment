@@ -18,6 +18,21 @@ jobs:
     name: Build, Test, and Push to Amazon ECR
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_DB: java_assignment
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -34,11 +49,11 @@ jobs:
 
       - name: Build and Run Tests
         env:
-          DB_URL: ${{ secrets.DB_URL }}
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_URL: jdbc:postgresql://localhost:5432/java_assignment
+          DB_USERNAME: postgres
+          DB_PASSWORD: testpassword
           DB_GENERATION: drop-and-create
-          DB_LOG_SQL: true
+          DB_LOG_SQL: false
         run: |
           ./mvnw clean package
 
