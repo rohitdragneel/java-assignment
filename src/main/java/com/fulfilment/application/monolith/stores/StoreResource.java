@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
@@ -22,6 +21,7 @@ import jakarta.ws.rs.ext.Provider;
 import java.util.List;
 import org.jboss.logging.Logger;
 
+
 @Path("store")
 @ApplicationScoped
 @Produces("application/json")
@@ -29,7 +29,6 @@ import org.jboss.logging.Logger;
 public class StoreResource {
 
   @Inject StoreService storeService;
-  @Inject LegacyStoreManagerGateway legacyStoreManagerGateway;
 
   private static final Logger LOGGER = Logger.getLogger(StoreResource.class.getName());
 
@@ -50,37 +49,26 @@ public class StoreResource {
 
   @POST
   public Response create(Store store) {
-    // 1. Transaction commits inside storeService.create(store)
+    // StoreService commits the transaction and fires StoreCreatedEvent;
+    // StoreEventObserver notifies the legacy system AFTER the transaction commits.
     Store created = storeService.create(store);
-
-    // 2. Guaranteed to execute AFTER the database has committed!
-    legacyStoreManagerGateway.createStoreOnLegacySystem(created);
-
     return Response.ok(created).status(201).build();
   }
 
   @PUT
   @Path("{id}")
   public Store update(Long id, Store updatedStore) {
-    // 1. Transaction commits inside storeService.update()
-    Store entity = storeService.update(id, updatedStore);
-
-    // 2. Guaranteed to execute AFTER the database has committed!
-    legacyStoreManagerGateway.updateStoreOnLegacySystem(entity);
-
-    return entity;
+    // StoreService commits the transaction and fires StoreUpdatedEvent;
+    // StoreEventObserver notifies the legacy system AFTER the transaction commits.
+    return storeService.update(id, updatedStore);
   }
 
   @PATCH
   @Path("{id}")
   public Store patch(Long id, Store updatedStore) {
-    // 1. Transaction commits inside storeService.patch()
-    Store entity = storeService.patch(id, updatedStore);
-
-    // 2. Guaranteed to execute AFTER the database has committed!
-    legacyStoreManagerGateway.updateStoreOnLegacySystem(entity);
-
-    return entity;
+    // StoreService commits the transaction and fires StoreUpdatedEvent;
+    // StoreEventObserver notifies the legacy system AFTER the transaction commits.
+    return storeService.patch(id, updatedStore);
   }
 
   @DELETE
