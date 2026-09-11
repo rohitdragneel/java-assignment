@@ -1,9 +1,10 @@
 package com.fulfilment.application.monolith.fulfillment.adapters.restapi;
 
+import com.fulfilment.application.monolith.fulfillment.adapters.database.DbFulfillmentAssignment;
 import com.fulfilment.application.monolith.fulfillment.adapters.database.FulfillmentRepository;
 import com.fulfilment.application.monolith.fulfillment.domain.FulfillmentAssignment;
-import com.fulfilment.application.monolith.fulfillment.domain.usecases.AssociateProductFulfillmentUseCase;
-import com.fulfilment.application.monolith.warehouses.adapters.database.DbWarehouse;
+import com.fulfilment.application.monolith.fulfillment.domain.ports.in.AssociateProductFulfillmentOperation;
+import com.fulfilment.application.monolith.warehouses.adapters.database.WarehouseRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -27,16 +28,9 @@ import java.util.NoSuchElementException;
 @Consumes(MediaType.APPLICATION_JSON)
 public class FulfillmentResource {
 
-  @Inject AssociateProductFulfillmentUseCase associateProductFulfillmentUseCase;
+  @Inject AssociateProductFulfillmentOperation associateUseCase;
   @Inject FulfillmentRepository fulfillmentRepository;
-  @Inject com.fulfilment.application.monolith.warehouses.adapters.database.WarehouseRepository warehouseRepository;
-
-  public static class CreateFulfillmentRequest {
-    public Long storeId;
-    public Long productId;
-    public Long warehouseId;
-    public String warehouseBusinessUnitCode;
-  }
+  @Inject WarehouseRepository warehouseRepository;
 
   @POST
   public Response create(CreateFulfillmentRequest request) {
@@ -47,30 +41,30 @@ public class FulfillmentResource {
     }
 
     Long targetWarehouseId = request.warehouseId;
+
     if (targetWarehouseId == null && request.warehouseBusinessUnitCode != null) {
-      DbWarehouse dbWarehouse =
-          warehouseRepository.find("businessUnitCode", request.warehouseBusinessUnitCode).firstResult();
-      if (dbWarehouse == null) {
+      DbFulfillmentAssignment ignored = null; // Panache find via warehouseRepository
+      var dbWh = warehouseRepository.find("businessUnitCode", request.warehouseBusinessUnitCode)
+          .firstResultOptional();
+      if (dbWh.isEmpty()) {
         return Response.status(Response.Status.NOT_FOUND)
-            .entity(
-                Map.of(
-                    "error",
-                    "Warehouse not found with business unit code: "
-                        + request.warehouseBusinessUnitCode))
+            .entity(Map.of("error",
+                "Warehouse not found with business unit code: " + request.warehouseBusinessUnitCode))
             .build();
       }
-      targetWarehouseId = dbWarehouse.id;
+      targetWarehouseId = dbWh.get().id;
     }
 
     try {
-      FulfillmentAssignment assignment =
-          associateProductFulfillmentUseCase.associate(
-              request.storeId, request.productId, targetWarehouseId);
-      return Response.status(Response.Status.CREATED).entity(assignment).build();
+      FulfillmentAssignment result =
+          associateUseCase.associate(request.storeId, request.productId, targetWarehouseId);
+      return Response.status(Response.Status.CREATED).entity(result).build();
     } catch (NoSuchElementException e) {
-      return Response.status(Response.Status.NOT_FOUND).entity(Map.of("error", e.getMessage())).build();
+      return Response.status(Response.Status.NOT_FOUND)
+          .entity(Map.of("error", e.getMessage())).build();
     } catch (IllegalArgumentException | IllegalStateException e) {
-      return Response.status(Response.Status.BAD_REQUEST).entity(Map.of("error", e.getMessage())).build();
+      return Response.status(Response.Status.BAD_REQUEST)
+          .entity(Map.of("error", e.getMessage())).build();
     }
   }
 
@@ -86,8 +80,7 @@ public class FulfillmentResource {
   @Path("{id}")
   @Transactional
   public Response delete(@PathParam("id") Long id) {
-    boolean deleted = fulfillmentRepository.deleteById(id);
-    if (!deleted) {
+    if (!fulfillmentRepository.deleteById(id)) {
       return Response.status(Response.Status.NOT_FOUND)
           .entity(Map.of("error", "Assignment not found with id: " + id))
           .build();
