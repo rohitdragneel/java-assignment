@@ -3,7 +3,7 @@ package com.fulfilment.application.monolith.fulfillment.adapters.restapi;
 import com.fulfilment.application.monolith.fulfillment.adapters.database.DbFulfillmentAssignment;
 import com.fulfilment.application.monolith.fulfillment.adapters.database.FulfillmentRepository;
 import com.fulfilment.application.monolith.fulfillment.domain.FulfillmentAssignment;
-import com.fulfilment.application.monolith.fulfillment.domain.ports.in.AssociateProductFulfillmentOperation;
+import com.fulfilment.application.monolith.fulfillment.domain.ports.inbound.AssociateProductFulfillmentOperation;
 import com.fulfilment.application.monolith.warehouses.adapters.database.WarehouseRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

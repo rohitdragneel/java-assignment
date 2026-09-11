@@ -1,6 +1,6 @@
 package com.fulfilment.application.monolith.fulfillment.adapters.gateways;
 
-import com.fulfilment.application.monolith.fulfillment.domain.ports.out.StoreResolver;
+import com.fulfilment.application.monolith.fulfillment.domain.ports.outbound.StoreResolver;
 import com.fulfilment.application.monolith.stores.Store;
 import jakarta.enterprise.context.ApplicationScoped;
 

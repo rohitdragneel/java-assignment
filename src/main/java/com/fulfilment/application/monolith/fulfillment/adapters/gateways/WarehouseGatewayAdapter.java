@@ -1,6 +1,6 @@
 package com.fulfilment.application.monolith.fulfillment.adapters.gateways;
 
-import com.fulfilment.application.monolith.fulfillment.domain.ports.out.WarehouseResolver;
+import com.fulfilment.application.monolith.fulfillment.domain.ports.outbound.WarehouseResolver;
 import com.fulfilment.application.monolith.warehouses.adapters.database.DbWarehouse;
 import com.fulfilment.application.monolith.warehouses.adapters.database.WarehouseRepository;
 import jakarta.enterprise.context.ApplicationScoped;

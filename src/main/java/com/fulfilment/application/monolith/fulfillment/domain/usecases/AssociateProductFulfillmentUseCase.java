@@ -1,11 +1,11 @@
 package com.fulfilment.application.monolith.fulfillment.domain.usecases;
 
 import com.fulfilment.application.monolith.fulfillment.domain.FulfillmentAssignment;
-import com.fulfilment.application.monolith.fulfillment.domain.ports.in.AssociateProductFulfillmentOperation;
-import com.fulfilment.application.monolith.fulfillment.domain.ports.out.FulfillmentStore;
-import com.fulfilment.application.monolith.fulfillment.domain.ports.out.ProductResolver;
-import com.fulfilment.application.monolith.fulfillment.domain.ports.out.StoreResolver;
-import com.fulfilment.application.monolith.fulfillment.domain.ports.out.WarehouseResolver;
+import com.fulfilment.application.monolith.fulfillment.domain.ports.inbound.AssociateProductFulfillmentOperation;
+import com.fulfilment.application.monolith.fulfillment.domain.ports.outbound.FulfillmentStore;
+import com.fulfilment.application.monolith.fulfillment.domain.ports.outbound.ProductResolver;
+import com.fulfilment.application.monolith.fulfillment.domain.ports.outbound.StoreResolver;
+import com.fulfilment.application.monolith.fulfillment.domain.ports.outbound.WarehouseResolver;
 import com.fulfilment.application.monolith.fulfillment.domain.validator.FulfillmentValidator;
 import com.fulfilment.application.monolith.fulfillment.event.ProductFulfillmentAssociatedEvent;
 import jakarta.enterprise.context.ApplicationScoped;

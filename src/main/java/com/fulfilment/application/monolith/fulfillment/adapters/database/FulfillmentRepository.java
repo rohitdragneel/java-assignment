@@ -1,7 +1,7 @@
 package com.fulfilment.application.monolith.fulfillment.adapters.database;
 
 import com.fulfilment.application.monolith.fulfillment.domain.FulfillmentAssignment;
-import com.fulfilment.application.monolith.fulfillment.domain.ports.out.FulfillmentStore;
+import com.fulfilment.application.monolith.fulfillment.domain.ports.outbound.FulfillmentStore;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.util.HashMap;

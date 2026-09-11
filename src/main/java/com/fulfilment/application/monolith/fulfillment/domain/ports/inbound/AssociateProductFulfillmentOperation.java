@@ -1,4 +1,4 @@
-package com.fulfilment.application.monolith.fulfillment.domain.ports.in;
+package com.fulfilment.application.monolith.fulfillment.domain.ports.inbound;
 
 import com.fulfilment.application.monolith.fulfillment.domain.FulfillmentAssignment;
 
